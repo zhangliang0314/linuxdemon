@@ -1,10 +1,14 @@
 #!/bin/bash
+TITLE="System Information Reprot For $HOSTNAME"
+CURRENT_TIME=$(date +"%x &r &z")
+TIME_STAMP="Generated $CURRENT_TIME,by $USER"
 
 echo "<HTML>
 	<HEAD>
-		<TITLE>Page Title</TITLE>
+		<TITLE>$TITLE</TITLE>
 	</HEAD>
 	<BODY>
-		Page body.
+		<H1>$TITLE</H1>
+		<P>$TIME_STAMP</P>
 	</BODY>
 </HTML>"
