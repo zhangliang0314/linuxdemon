@@ -1,51 +1,8 @@
 #!/bin/bash
 
-#read-menu:a menu driven system information program
+#sys_info_page:program to output a system information page
 
-DELAY=3
-
-while true; do
-
-	clear
-	cat <<- _EOF_ 
-		Please Select:
-	
-		A.Display System Information
-		B.Display Disk Space
-		C.Display Home Space Utilization
-		Q.Quit
-	_EOF_
-	read -p "Enter selection [A,B,C or Q] > "
-
-	case $REPLY in
-		q|Q)	echo "Program terminated."
-			exit
-			;;
-		a|A)	echo "Hostname: $HOSTNAME"
-			uptime
-			sleep $DELAY
-			continue
-			;;
-		
-		b|B)	df -h
-			sleep $DELAY
-			continue
-			;;
-		c|C)	if [[ $(id -u) -eq 0 ]]; then
-				echo "Home Space Utilization (All Users)"
-				du -sh /home/*
-			else
-				echo "Home Space Utilization ($USER)"
-				du -sh $HOME
-			fi
-			sleep $DELAY
-			continue
-			;;
-		*)	echo "Invalid entry." >&2
-			exit 1
-			;;
-	esac
-done
+PROGNAME=$(basename $0)
 TITLE="System Information Reprot For $HOSTNAME"
 CURRENT_TIME=$(date +"%x &r &z")
 TIME_STAMP="Generated $CURRENT_TIME,by $USER"
@@ -80,17 +37,80 @@ report_home_space () {
 	return
 }
 
-cat << _EOF_
- <HTML>
-	<HEAD>
-		<TITLE>$TITLE</TITLE>
-	</HEAD>
-	<BODY>
-		<H1>$TITLE</H1>
-		<P>$TIME_STAMP</P>
-		$(report_uptime)
-		$(report_disk_space)
-		$(report_home_space)
-	</BODY>
-</HTML>
-_EOF_
+usage () {
+	echo "$PROGNAME: usage: $PROGNAME [ -f file | -i ]"
+	return
+}
+
+write_html_page () {
+	cat <<- _EOF_
+	<HTML>
+		<HEAD>
+			<TITLE>$TITLE</TITLE>
+		</HEAD>
+		<BODY>
+			<H1>$TITLE</H!>
+<			<P>$TIME_STAMP</P>
+			$(report_uptime)
+			$(report_disk_space)
+			$(report_home_space)
+		</BODY>
+	</HTML>
+	_EOF_
+	return
+}
+
+# process command line options
+
+interactive=
+filename=
+
+
+while [[ -n $1 ]]; do
+	case $1 in
+		-f | --file)			shift
+						filename=$1
+						;;
+		-i | --interactive)		interactive=1
+						;;
+		-h | -help)			usage
+						exit
+						;;
+		*)				usage >&2
+						exit 1
+						;;
+	esac
+	shift
+done
+
+# interactive mode
+if [[ -n $interactive ]]; then
+	while true; do
+		read -p "Enter name of output file: " filename
+		if [[ -e $filename ]]; then
+			read -p "'$filename' exists.Overwrite? [y/n/q] > "
+		case $REPLY in
+		y|Y)	break
+			;;
+		q|Q)	echo "Program terminated."
+			exit
+			;;
+		*)	continue
+			;;
+		esac
+		fi
+	done
+fi
+
+# output html page
+
+if [[ -n $filename ]]; then
+	if touch $filename && [[ -f $filename ]]; then
+		write_html_page > $filename
+	else
+		echo "$PROGNAME: Cannot write file '$filename'" >&2
+		exit 1
+	fi
+else
+	write_html_page
+fi
