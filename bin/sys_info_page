@@ -62,7 +62,7 @@ write_html_page () {
 			<TITLE>$TITLE</TITLE>
 		</HEAD>
 		<BODY>
-			<H1>$TITLE</H!>
+			<H1>$TITLE</H1>
 <			<P>$TIME_STAMP</P>
 			$(report_uptime)
 			$(report_disk_space)
@@ -111,6 +111,9 @@ if [[ -n $interactive ]]; then
 		*)	continue
 			;;
 		esac
+	        else
+	       	        echo "can't find this file"
+	       		exit	       
 		fi
 	done
 fi
